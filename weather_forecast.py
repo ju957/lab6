@@ -1,6 +1,11 @@
 from datetime import datetime
+import logging
 import requests
 import os
+
+logging.basicConfig(filename='debug.log', level=logging.DEBUG,
+                    format=f'%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
 
 def main():
     weather_key = os.environ.get('WEATHER_KEY')
@@ -11,24 +16,30 @@ def main():
 
     # User input for weather location. correct format is {city name},{two-letter country code} ex. london,uk
     chosen_location = input('Please enter a city and country (country as a two-letter code) you want to see a weather '
-                     + 'forecast for: ')
+                            + 'forecast for: ')
     """ User input for the temperature units. openweathermap supports the codes standard for kelvin, imperial for
         fahrenheit, and metric for celcius. Since openweathermap automatically uses kelvin if an invalid unit is used,
         the user string doesn't need to be converted to the 'correct' choice."""
     chosen_units, abbrev, wind_abbrev = temperature_units()
 
-
-
     query = {'q': chosen_location, 'units': chosen_units, 'appid': weather_key}
     url = f'http://api.openweathermap.org/data/2.5/forecast?'
-    data = requests.get(url, query).json()
+    try:
+        logging.info(f'Request is about to be made to the openweathermap api with the parameters {query}.')
+        data = requests.get(url, query).json()
+    except:
+        logging.exception(f'Error requesting URL {url}')
 
     while data == {'cod': '404', 'message': 'city not found'}:
         print('Please enter a valid city and country. For example: london, uk')
         chosen_location = input(
             'Please enter a city and country (country as a two-letter code) you want to see a weather forecast for: ')
         query.update({'q': chosen_location})
-        data = requests.get(url, query).json()
+        try:
+            logging.info(f'Request is about to be made to the openweathermap api with the parameters {query}.')
+            data = requests.get(url, query).json()
+        except:
+            logging.exception(f'Error requesting URL {url}')
 
     forecast_items = data['list']
 
@@ -55,7 +66,6 @@ def temperature_units():
         wind_abbrev = 'm/s'
 
     return chosen_units, abbrev, wind_abbrev
-
 
 
 if __name__ == '__main__':
