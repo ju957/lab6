@@ -38,7 +38,7 @@ def main():
         temp = forecast['main']['temp']
         weather_description = forecast['weather'][0]['description']
         wind_speed = forecast['wind']['speed']
-        print(f'At {date}, the temperature is {temp:.2f}{abbrev}. '
+        print(f'At {date} UTC, the temperature is {temp:.2f}{abbrev}. '
               + f'The weather is {weather_description} with a {wind_speed} {wind_abbrev} wind speed.')
 
 
