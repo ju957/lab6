@@ -1,3 +1,7 @@
+"""Uses user inputs to call the weather forecast for a specific city. The forecast details temperature, weather, and
+   wind speed for 5 days, in 3 hour intervals."""
+
+
 from datetime import datetime
 import logging
 import requests
@@ -8,10 +12,14 @@ logging.basicConfig(filename='debug.log', level=logging.DEBUG,
 
 
 def main():
+    logging.info('Program started.')
+    # The API key for calling openweathermap is stored in an environmental variable.
     weather_key = os.environ.get('WEATHER_KEY')
+    # If the environmental variable is missing, the user is alerted to this fact and
     if weather_key is None:
         print('The API key seems to be missing. Please enter an API key for openweathermap.org to the WEATHER_KEY ' +
               'environmental variable before trying again.')
+        logging.critical(f'The API key needed is missing or faulty. Current variable is {weather_key}')
         exit()
 
     # User input for weather location. correct format is {city name},{two-letter country code} ex. london,uk
@@ -30,11 +38,13 @@ def main():
     except:
         logging.exception(f'Error requesting URL {url}')
 
+    # If the user input a nonexistent/invalid city, this while block will catch and fix their entry before it causes an
+    # actual error.
     while data == {'cod': '404', 'message': 'city not found'}:
         print('Please enter a valid city and country. For example: london, uk')
         chosen_location = input(
             'Please enter a city and country (country as a two-letter code) you want to see a weather forecast for: ')
-        query.update({'q': chosen_location})
+        query.update({'q': chosen_location})  # Only the location parameter is updated.
         try:
             logging.info(f'Request is about to be made to the openweathermap api with the parameters {query}.')
             data = requests.get(url, query).json()
@@ -43,6 +53,7 @@ def main():
 
     forecast_items = data['list']
 
+    # Loops for every forecast, which are in 3 hour intervals for 5 days
     for forecast in forecast_items:
         timestamp = forecast['dt']
         date = datetime.fromtimestamp(timestamp)
@@ -53,6 +64,9 @@ def main():
               + f'The weather is {weather_description} with a {wind_speed} {wind_abbrev} wind speed.')
 
 
+"""This function is called to ask the user for what kind of units should be used. It outputs the units to be added to 
+   the api call, and the abbreviations needed for the final printing of the forecast i.e. temperature abbreviation
+   and what units the wind speed is in."""
 def temperature_units():
     chosen_units = input('Enter what temperature units you want to use (Kelvin, Imperial, or Metric): ')
     if chosen_units.lower() == 'imperial':
