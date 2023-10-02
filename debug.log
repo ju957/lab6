@@ -1,0 +1,2 @@
+2023-10-01 23:53:35,475 - root - INFO - Program started.
+2023-10-01 23:53:35,475 - root - CRITICAL - The API key needed is missing or faulty. Current variable is None
