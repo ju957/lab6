@@ -1,4 +1,3 @@
-from datetime import datetime
 import requests
 import os
 
@@ -15,12 +14,12 @@ def main():
     """ User input for the temperature units. openweathermap supports the codes standard for kelvin, imperial for
         fahrenheit, and metric for celcius. Since openweathermap automatically uses kelvin if an invalid unit is used,
         the user string doesn't need to be converted to the 'correct' choice."""
-    chosen_units, abbrev, wind_abbrev = temperature_units()
+    chosen_units = input('Enter what temperature units you want to use (Kelvin, Imperial, or Metric): ')
 
 
 
     query = {'q': chosen_location, 'units': chosen_units, 'appid': weather_key}
-    url = f'http://api.openweathermap.org/data/2.5/forecast?'
+    url = f'https://api.openweathermap.org/data/2.5/weather'
     data = requests.get(url, query).json()
 
     while data == {'cod': '404', 'message': 'city not found'}:
@@ -29,33 +28,10 @@ def main():
             'Please enter a city and country (country as a two-letter code) you want to see a weather forecast for: ')
         query.update({'q': chosen_location})
         data = requests.get(url, query).json()
+    weather_description = data['weather'][0]['description']
 
-    forecast_items = data['list']
-
-    for forecast in forecast_items:
-        timestamp = forecast['dt']
-        date = datetime.fromtimestamp(timestamp)
-        temp = forecast['main']['temp']
-        weather_description = forecast['weather'][0]['description']
-        wind_speed = forecast['wind']['speed']
-        print(f'At {date}, the temperature is {temp:.2f}{abbrev}. '
-              + f'The weather is {weather_description} with a {wind_speed} {wind_abbrev} wind speed.')
-
-
-def temperature_units():
-    chosen_units = input('Enter what temperature units you want to use (Kelvin, Imperial, or Metric): ')
-    if chosen_units.lower() == 'imperial':
-        abbrev = 'F'
-        wind_abbrev = 'mph'
-    elif chosen_units.lower() == 'metric':
-        abbrev = 'C'
-        wind_abbrev = 'm/s'
-    else:
-        abbrev = 'K'
-        wind_abbrev = 'm/s'
-
-    return chosen_units, abbrev, wind_abbrev
-
+    temp = data['main']['temp']
+    print(f'The weather is {weather_description}, the temperature is {temp:.2f}F.')
 
 
 if __name__ == '__main__':
